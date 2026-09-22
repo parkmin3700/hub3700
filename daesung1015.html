@@ -71,6 +71,10 @@ input::placeholder{color:#B7B0A2}
   border-radius:12px;padding:14px}
 .check input{margin-top:4px;width:18px;height:18px;accent-color:var(--gold-deep);flex:none}
 .check label{margin:0;font-weight:500;font-size:14.5px;line-height:1.55}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.seg button{padding:13px 4px;font:inherit;font-size:15px;font-weight:600;cursor:pointer;
+  border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink-soft)}
+.seg button[aria-pressed="true"]{border-color:var(--gold);background:var(--gold);color:#fff}
 .err{color:var(--warn);font-size:13.5px;font-weight:600;margin-top:8px;display:none}
 .err.on{display:block}
 button.submit{width:100%;margin-top:18px;padding:16px;border:0;border-radius:12px;background:var(--ink);
@@ -156,6 +160,15 @@ footer b{color:var(--ink)}
     </div>
 
     <div class="field">
+      <label id="trackLabel">탐구 선택</label>
+      <div class="seg" id="track" role="group" aria-labelledby="trackLabel">
+        <button type="button" data-v="사탐" aria-pressed="false">사탐</button>
+        <button type="button" data-v="사과탐" aria-pressed="false">사과탐</button>
+        <button type="button" data-v="과탐" aria-pressed="false">과탐</button>
+      </div>
+    </div>
+
+    <div class="field">
       <label for="phone">연락처 <span class="opt">(선택)</span></label>
       <input type="tel" id="phone" placeholder="010-0000-0000" inputmode="numeric" autocomplete="tel">
     </div>
@@ -191,6 +204,7 @@ footer b{color:var(--ink)}
       <div><span>시험</span><span id="rExam">10월 15일(목)</span></div>
       <div><span>이름</span><span id="rName">-</span></div>
       <div><span>좌석번호</span><span id="rSeat">-</span></div>
+      <div><span>탐구</span><span id="rTrack">-</span></div>
       <div><span>응시료</span><span id="rFee">25,000원</span></div>
     </div>
     <div class="note" id="doneNote">접수 내용이 학원으로 전송되었습니다. 이 화면을 캡처해 두면 좋습니다.</div>
@@ -306,6 +320,15 @@ var CONFIG = {
     copy(CONFIG.bank + " " + CONFIG.account, this, "복사했습니다");
   });
 
+  var track = "";
+  var segBtns = document.querySelectorAll("#track button");
+  segBtns.forEach(function (b) {
+    b.addEventListener("click", function () {
+      track = b.getAttribute("data-v");
+      segBtns.forEach(function (o) { o.setAttribute("aria-pressed", o === b ? "true" : "false"); });
+    });
+  });
+
   var summary = "";
   $("submitBtn").addEventListener("click", function () {
     var name = $("name").value.trim(), seat = $("seat").value.trim();
@@ -315,24 +338,25 @@ var CONFIG = {
     err.className = "err";
     if (name.length < 2) return stop("이름을 정확히 적어주세요.", $("name"));
     if (!seat) return stop("좌석번호를 적어주세요.", $("seat"));
+    if (!track) return stop("탐구 선택을 골라주세요.", null);
     if (!$("paid").checked) return stop("응시료를 입금하신 뒤 아래 칸에 체크해 주세요.", $("paid"));
 
     var no = "DP" + new Date().toISOString().slice(5, 10).replace("-", "") + "-" +
              String(Math.floor(Math.random() * 9000) + 1000);
     var data = {
-      시험: CONFIG.examName, 접수번호: no, 이름: name, 좌석번호: seat, 연락처: phone,
+      시험: CONFIG.examName, 접수번호: no, 이름: name, 좌석번호: seat, 탐구선택: track, 연락처: phone,
       입금자명: payer || name, 응시료: CONFIG.fee,
       신청시각: new Date(Date.now() + KST * 60000).toISOString().replace("T", " ").slice(0, 16)
     };
     summary = "[대성 더프리미엄 " + CONFIG.examName + " 접수]\n접수번호 " + no + "\n이름 " + name +
-              "\n좌석번호 " + seat + (phone ? "\n연락처 " + phone : "") +
+              "\n좌석번호 " + seat + "\n탐구 " + track + (phone ? "\n연락처 " + phone : "") +
               (payer && payer !== name ? "\n입금자명 " + payer : "") +
               "\n응시료 " + won(CONFIG.fee) + " 입금 완료";
 
     var btn = this; btn.disabled = true; btn.textContent = "전송 중…";
 
     function finish(sent) {
-      $("rNo").textContent = no; $("rName").textContent = name; $("rSeat").textContent = seat;
+      $("rNo").textContent = no; $("rName").textContent = name; $("rSeat").textContent = seat; $("rTrack").textContent = track;
       if (!sent) { $("doneNote").innerHTML = "아래 <b>접수 내용 복사하기</b>를 눌러 학원 카카오톡으로 보내주세요."; }
       $("formCard").style.display = "none";
       var d = $("done"); d.style.display = "block"; d.setAttribute("data-show", "1");
@@ -341,13 +365,10 @@ var CONFIG = {
 
     if (CONFIG.scriptUrl) {
       fetch(CONFIG.scriptUrl, {
-        method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
+        method: "POST", mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(data)
-      }).then(function () { finish(true); })
-        .catch(function () {
-          fetch(CONFIG.scriptUrl, { method: "POST", mode: "no-cors", body: JSON.stringify(data) })
-            .then(function () { finish(true); }).catch(function () { finish(false); });
-        });
+      }).then(function () { finish(true); }).catch(function () { finish(false); });
     } else { finish(false); }
   });
 
