@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>2027 정시 분석 신청 | 박민독학재수</title>
+<meta name="theme-color" content="#0f1b3d">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root {
+    --navy: #0f1b3d; --navy2: #1c2d5e; --gold: #e8b64c; --ink: #141a2b; --sub: #6a7287;
+    --line: #e4e7ef; --bg: #f4f5f9; --card: #fff; --ok: #1f9d6b; --err: #d64545;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; }
+  body { font-family: Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; background: var(--bg); color: var(--ink); letter-spacing: -0.01em; }
+  .hero {
+    background: radial-gradient(120% 90% at 100% 0%, #2a3f7e 0%, var(--navy) 55%) , var(--navy);
+    color: #fff; padding: 34px 22px 64px; position: relative; overflow: hidden;
+  }
+  .hero::after {
+    content: ""; position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+    background-size: 22px 22px; mask-image: linear-gradient(180deg, #000 0%, transparent 90%); -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 90%);
+  }
+  .hero-in { max-width: 520px; margin: 0 auto; position: relative; z-index: 1; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 600; color: var(--navy); background: var(--gold); padding: 5px 10px; border-radius: 999px; }
+  .hero h1 { margin: 14px 0 8px; font-size: 28px; font-weight: 800; line-height: 1.25; }
+  .hero h1 span { color: var(--gold); }
+  .hero p { margin: 0; font-size: 14px; line-height: 1.6; color: rgba(255,255,255,.78); }
+
+  .wrap { max-width: 520px; margin: -40px auto 0; padding: 0 16px 120px; position: relative; z-index: 2; }
+  .sec { background: var(--card); border-radius: 18px; padding: 20px 18px; margin-bottom: 12px; box-shadow: 0 6px 20px rgba(15,27,61,.06); }
+  .sec-h { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .num { width: 26px; height: 26px; border-radius: 8px; background: var(--navy); color: #fff; font-size: 13px; font-weight: 700; display: grid; place-items: center; flex: none; }
+  .sec-h b { font-size: 16px; }
+  .sec-h small { color: var(--sub); font-size: 12px; margin-left: auto; }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1.3fr; gap: 10px; }
+  .field label { display: block; font-size: 12px; color: var(--sub); margin: 0 0 6px 2px; }
+  input, textarea {
+    width: 100%; font: inherit; font-size: 16px; padding: 13px 14px; border-radius: 12px; border: 1.5px solid var(--line);
+    background: #fafbfd; color: var(--ink); outline: none; transition: border-color .15s, background .15s;
+  }
+  input:focus, textarea:focus { border-color: var(--navy2); background: #fff; }
+  textarea { min-height: 76px; resize: vertical; }
+  .field + .field { margin-top: 10px; }
+  .row2 .field + .field { margin-top: 0; }
+  input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number] { -moz-appearance: textfield; }
+
+  .types { display: grid; gap: 8px; }
+  .type {
+    text-align: left; font: inherit; border: 1.5px solid var(--line); background: #fff; border-radius: 14px; padding: 14px 14px;
+    display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all .15s; color: var(--ink);
+  }
+  .type .dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #c6cbd8; flex: none; position: relative; }
+  .type .t { font-weight: 700; font-size: 15px; }
+  .type .p { font-size: 12px; color: var(--sub); margin-top: 3px; }
+  .type.on { border-color: var(--navy); background: #f2f4fb; }
+  .type.on .dot { border-color: var(--navy); }
+  .type.on .dot::after { content: ""; position: absolute; inset: 3px; border-radius: 50%; background: var(--navy); }
+  .type.off { opacity: .45; cursor: not-allowed; }
+  .type .tag { margin-left: auto; font-size: 11px; color: var(--sub); background: var(--bg); padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+
+  .dates { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 8px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .dates::-webkit-scrollbar { display: none; }
+  .date {
+    flex: none; width: 58px; padding: 10px 0; border-radius: 14px; border: 1.5px solid var(--line); background: #fff; text-align: center;
+    font: inherit; cursor: pointer; scroll-snap-align: start; color: var(--ink); transition: all .15s;
+  }
+  .date .m { font-size: 11px; color: var(--sub); }
+  .date .d { font-size: 20px; font-weight: 800; margin: 2px 0; }
+  .date .w { font-size: 12px; color: var(--sub); }
+  .date.sun .w, .date.sun .d { color: var(--err); }
+  .date.sat .w { color: #3a6fd8; }
+  .date.on { background: var(--navy); border-color: var(--navy); color: #fff; }
+  .date.on .m, .date.on .w, .date.on .d { color: #fff; }
+  .slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+  .slot { font: inherit; padding: 12px 0; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; cursor: pointer; color: var(--ink); }
+  .slot small { display: block; font-size: 11px; color: var(--sub); margin-top: 2px; }
+  .slot.on { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .slot.on small { color: rgba(255,255,255,.75); }
+  .grid { display: grid; grid-template-columns: 1.25fr 1fr; gap: 8px 10px; align-items: end; }
+  .grid .lab { grid-column: 1 / -1; font-size: 13px; font-weight: 700; margin-top: 6px; }
+  .grid .lab:first-child { margin-top: 0; }
+  select { width: 100%; font: inherit; font-size: 15px; padding: 13px 12px; border-radius: 12px; border: 1.5px solid var(--line); background: #fafbfd; color: var(--ink); outline: none; appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236a7287' stroke-width='2' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+  .unit { position: relative; } .unit::after { content: "점"; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--sub); font-size: 14px; pointer-events: none; }
+  .info { background: #f2f4fb; border-radius: 14px; padding: 14px; font-size: 14px; line-height: 1.6; color: var(--navy2); }
+  .info b { color: var(--navy); }
+  .flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 18px; }
+  .flow div { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.15); border-radius: 12px; padding: 10px 6px; text-align: center; font-size: 12px; line-height: 1.4; color: rgba(255,255,255,.9); }
+  .flow div b { display: block; color: var(--gold); font-size: 11px; margin-bottom: 2px; }
+  .photo { position: relative; display: block; border: 2px dashed #c6cbd8; border-radius: 16px; padding: 22px 14px; text-align: center; cursor: pointer; background: #fafbfd; color: var(--sub); font-size: 14px; line-height: 1.6; }
+  .photo b { display: block; color: var(--navy); font-size: 16px; margin-bottom: 2px; }
+  .photo.has { border-style: solid; border-color: var(--navy); padding: 10px; }
+  .photo img { display: block; max-width: 100%; max-height: 320px; margin: 0 auto 8px; border-radius: 10px; }
+  .photo input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  .empty { font-size: 13px; color: var(--sub); padding: 6px 2px; }
+
+  .bar { position: fixed; left: 0; right: 0; bottom: 0; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); background: linear-gradient(180deg, rgba(244,245,249,0), var(--bg) 35%); z-index: 5; }
+  .bar-in { max-width: 520px; margin: 0 auto; }
+  .msg { min-height: 20px; font-size: 13px; color: var(--err); text-align: center; margin-bottom: 8px; font-weight: 600; }
+  .btn { width: 100%; font: inherit; font-size: 17px; font-weight: 800; padding: 16px; border: 0; border-radius: 16px; color: #fff; background: var(--navy); box-shadow: 0 10px 24px rgba(15,27,61,.25); cursor: pointer; }
+  .btn:disabled { opacity: .6; }
+  .btn.ghost { background: #fff; color: var(--navy); box-shadow: none; border: 1.5px solid var(--line); margin-top: 10px; }
+
+  .done { display: none; }
+  .ticket { background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(15,27,61,.1); }
+  .ticket-top { background: var(--navy); color: #fff; padding: 24px 20px 20px; text-align: center; }
+  .check { width: 54px; height: 54px; border-radius: 50%; background: var(--gold); display: grid; place-items: center; margin: 0 auto 12px; }
+  .ticket-top h2 { margin: 0; font-size: 20px; }
+  .ticket-top p { margin: 6px 0 0; font-size: 13px; color: rgba(255,255,255,.75); }
+  .ticket-cut { height: 18px; background: radial-gradient(circle at 0 50%, var(--bg) 9px, transparent 10px), radial-gradient(circle at 100% 50%, var(--bg) 9px, transparent 10px), #fff; border-top: 2px dashed var(--line); }
+  .ticket-body { padding: 6px 20px 22px; }
+  .kv { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+  .kv:last-child { border-bottom: 0; }
+  .kv span { color: var(--sub); }
+  .kv b { text-align: right; }
+  .note { font-size: 13px; color: var(--sub); text-align: center; line-height: 1.6; margin: 16px 0 0; }
+
+  .foot { text-align: center; font-size: 12px; color: #8b92a4; margin-top: 18px; line-height: 1.7; }
+  .spin { display: inline-block; width: 16px; height: 16px; border: 2.5px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: r .7s linear infinite; vertical-align: -3px; margin-right: 6px; }
+  @keyframes r { to { transform: rotate(360deg); } }
+  .shake { animation: s .35s; }
+  @keyframes s { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-in">
+    <span class="badge">재원생 전용</span>
+    <h1>2027 정시<br><span>지원 분석 신청</span></h1>
+    <p>대학별 반영 방법으로 계산한<br>참고용 결과지를 보내 드립니다.<br>따로 면담 시간을 잡지 않아도 됩니다.</p>
+    <div class="flow"><div><b>STEP 1</b>여기서 신청</div><div><b>STEP 2</b>결과지 스캔본 받기</div><div><b>STEP 3</b>궁금한 점은<br>독재폰 톡으로</div></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="form">
+    <section class="sec" id="s1">
+      <div class="sec-h"><div class="num">1</div><b>본인 확인</b></div>
+      <div class="row2">
+        <div class="field"><label for="seat">좌석번호</label><input id="seat" type="number" inputmode="numeric" placeholder="예: 315"></div>
+        <div class="field"><label for="name">이름</label><input id="name" type="text" maxlength="10" placeholder="이름" autocomplete="name"></div>
+      </div>
+    </section>
+
+    <section class="sec" id="s2">
+      <div class="sec-h"><div class="num">2</div><b>신청 종류</b></div>
+      <div class="types" id="types"></div>
+    </section>
+
+    <section class="sec" id="s3">
+      <div class="sec-h"><div class="num">3</div><b id="s3title">가채점 점수</b><small id="s3sub">원점수</small></div>
+      <div id="scoreBox" class="grid">
+        <div class="lab">국어</div>
+        <select id="korSel"><option value="">선택과목</option><option>화법과 작문</option><option>언어와 매체</option></select>
+        <div class="unit"><input id="kor" type="number" inputmode="numeric" placeholder="0~100"></div>
+        <div class="lab">수학</div>
+        <select id="mathSel"><option value="">선택과목</option><option>확률과 통계</option><option>미적분</option><option>기하</option></select>
+        <div class="unit"><input id="math" type="number" inputmode="numeric" placeholder="0~100"></div>
+        <div class="lab">영어 · 한국사</div>
+        <div class="unit"><input id="eng" type="number" inputmode="numeric" placeholder="영어 0~100"></div>
+        <div class="unit"><input id="hist" type="number" inputmode="numeric" placeholder="한국사 0~50"></div>
+        <div class="lab">탐구 1</div>
+        <select id="inq1Sel"></select>
+        <div class="unit"><input id="inq1" type="number" inputmode="numeric" placeholder="0~50"></div>
+        <div class="lab">탐구 2</div>
+        <select id="inq2Sel"></select>
+        <div class="unit"><input id="inq2" type="number" inputmode="numeric" placeholder="0~50"></div>
+      </div>
+      <div id="infoBox" style="display:none">
+        <label class="photo" id="photoBox">
+          <input id="photoInput" type="file" accept="image/*">
+          <img id="photoPrev" alt="성적표 사진 미리보기" style="display:none">
+          <b id="photoTitle">성적표 사진 올리기</b>
+          <span id="photoHint">눌러서 사진을 찍거나 골라 주세요.<br>점수가 잘 보이게 찍어 주세요.</span>
+        </label>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-h"><div class="num">4</div><b>분석에 참고할 내용</b><small>선택</small></div>
+      <div class="field"><label for="wish">관심 대학·학과</label><input id="wish" type="text" maxlength="200" placeholder="예: 부산대 경영, 전남대 간호"></div>
+      <div class="field"><label for="memo">하고 싶은 말</label><textarea id="memo" maxlength="300" placeholder="희망 지역, 전공 고민, 꼭 알고 싶은 것 등"></textarea></div>
+    </section>
+
+    <div class="foot">같은 종류를 다시 신청하면 이전 신청이 새 내용으로 바뀝니다.<br>문의 062-672-0521 · 010-3491-3700</div>
+  </div>
+
+  <div class="done" id="done">
+    <div class="ticket">
+      <div class="ticket-top">
+        <div class="check"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0f1b3d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+        <h2 id="doneTitle">신청이 접수되었습니다</h2>
+        <p id="doneNo"></p>
+      </div>
+      <div class="ticket-cut"></div>
+      <div class="ticket-body" id="doneBody"></div>
+    </div>
+    <p class="note">결과지는 스캔본으로 보내 드립니다.<br>궁금한 점은 독재폰 톡으로 물어보세요.</p>
+    <button class="btn ghost" id="again">다른 분석 신청하기</button>
+    <div class="foot">문의 062-672-0521 · 010-3491-3700</div>
+  </div>
+</main>
+
+<div class="bar" id="bar">
+  <div class="bar-in">
+    <div class="msg" id="msg"></div>
+    <button class="btn" id="submit">신청하기</button>
+  </div>
+</div>
+
+<script>
+  // ▼ Apps Script 웹앱 주소 (배포 후 받은 주소로 바꾸기)
+  var API_URL = 'https://script.google.com/macros/s/AKfycbzr0GaQLFZh5CZVhKXaGy_3zqaOv3xq6g1UqJYi_w0I8BTAQRIzx7Q--LP8OnxDK1SwHw/exec';
+
+  // ▼ 신청 종류별 기간 (Code.gs의 TYPES와 같게 유지)
+  var TYPES = [
+    { name: '1차 가채점 분석', desc: '가채점으로 지원 가능 범위 잡기', from: '2026-11-19', to: '2026-12-10', scores: true, photo: '' },
+    { name: '2차 실채점 분석', desc: '성적표 기준 군별 지원 조합', from: '2026-12-11', to: '2027-01-03', scores: false, photo: 'required' },
+    { name: '원서 접수 전 최종 점검', desc: '최종 지원 대학 확인', from: '2026-12-28', to: '2027-01-07', scores: false, photo: 'optional' }
+  ];
+  var INQ = ['생활과 윤리', '윤리와 사상', '한국지리', '세계지리', '동아시아사', '세계사', '경제', '정치와 법', '사회·문화',
+             '물리학Ⅰ', '화학Ⅰ', '생명과학Ⅰ', '지구과학Ⅰ', '물리학Ⅱ', '화학Ⅱ', '생명과학Ⅱ', '지구과학Ⅱ'];
+  var SEAT_MIN = 301, SEAT_MAX = 382;
+  var SCORE_IDS = ['korSel', 'kor', 'mathSel', 'math', 'eng', 'hist', 'inq1Sel', 'inq1', 'inq2Sel', 'inq2'];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var state = { type: null, photo: '' };
+
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function today() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function short(s) { var p = s.split('-'); return (+p[1]) + '/' + (+p[2]); }
+
+  function renderTypes() {
+    var t0 = today(), box = $('types'); box.innerHTML = '';
+    TYPES.forEach(function (t) {
+      var closed = t.to < t0, early = t.from > t0;
+      var b = document.createElement('button'); b.type = 'button';
+      b.className = 'type' + (closed || early ? ' off' : '') + (state.type === t ? ' on' : '');
+      b.innerHTML = '<span class="dot"></span><span><div class="t">' + t.name + '</div><div class="p">' + t.desc + '</div></span>' +
+        '<span class="tag">' + (closed ? '마감' : early ? short(t.from) + ' 오픈' : '~' + short(t.to)) + '</span>';
+      if (!closed && !early) b.onclick = function () { state.type = t; renderTypes(); renderS3(); };
+      box.appendChild(b);
+    });
+  }
+
+  function renderS3() {
+    var t = state.type;
+    var showScores = !t || t.scores;
+    $('scoreBox').style.display = showScores ? '' : 'none';
+    $('infoBox').style.display = showScores ? 'none' : '';
+    $('s3title').textContent = showScores ? '가채점 점수' : '성적표 사진';
+    $('s3sub').textContent = showScores ? '원점수' : (t.photo === 'required' ? '필수' : '선택 · 바뀐 경우만');
+  }
+
+  // 사진을 가로세로 최대 1800px JPEG로 줄여서 보냄 (용량·속도)
+  function shrink(file, cb) {
+    var url = URL.createObjectURL(file), img = new Image();
+    img.onload = function () {
+      var max = 1800, w = img.naturalWidth, h = img.naturalHeight, r = Math.min(1, max / Math.max(w, h));
+      var c = document.createElement('canvas'); c.width = Math.round(w * r); c.height = Math.round(h * r);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      cb(c.toDataURL('image/jpeg', 0.85));
+    };
+    img.onerror = function () { URL.revokeObjectURL(url); cb(''); };
+    img.src = url;
+  }
+
+  $('photoInput').onchange = function () {
+    var f = this.files && this.files[0];
+    if (!f) return;
+    $('photoTitle').textContent = '사진 준비 중…';
+    shrink(f, function (dataUrl) {
+      if (!dataUrl) { state.photo = ''; $('photoTitle').textContent = '사진을 읽지 못했습니다. 다시 골라 주세요.'; return; }
+      state.photo = dataUrl.split(',')[1];
+      $('msg').textContent = '';
+      $('photoPrev').src = dataUrl; $('photoPrev').style.display = 'block';
+      $('photoBox').classList.add('has');
+      $('photoTitle').textContent = '사진 준비 완료';
+      $('photoHint').textContent = '다른 사진으로 바꾸려면 다시 누르세요.';
+    });
+  };
+
+  function resetPhoto() {
+    state.photo = ''; $('photoInput').value = '';
+    $('photoPrev').style.display = 'none'; $('photoPrev').removeAttribute('src');
+    $('photoBox').classList.remove('has');
+    $('photoTitle').textContent = '성적표 사진 올리기';
+    $('photoHint').innerHTML = '눌러서 사진을 찍거나 골라 주세요.<br>점수가 잘 보이게 찍어 주세요.';
+  }
+
+  function fillInq(id) {
+    var s = $(id); s.innerHTML = '<option value="">과목 선택</option>';
+    INQ.forEach(function (x) { var o = document.createElement('option'); o.textContent = x; s.appendChild(o); });
+  }
+
+  function fail(text, secId) {
+    $('msg').textContent = text;
+    if (secId) {
+      var el = $(secId); el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
+    }
+  }
+  function okNum(v, max) { if (v === '') return true; var n = Number(v); return Math.floor(n) === n && n >= 0 && n <= max; }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  $('submit').onclick = function () {
+    $('msg').textContent = '';
+    var seat = Number($('seat').value), name = $('name').value.trim();
+    if (!(seat >= SEAT_MIN && seat <= SEAT_MAX) || Math.floor(seat) !== seat) return fail('좌석번호를 확인해 주세요 (' + SEAT_MIN + '~' + SEAT_MAX + ').', 's1');
+    if (name.length < 2) return fail('이름을 입력해 주세요.', 's1');
+    if (!state.type) return fail('신청 종류를 골라 주세요.', 's2');
+
+    var d = { seat: String(seat), name: name, type: state.type.name, wish: $('wish').value, memo: $('memo').value };
+    if (state.type.scores) {
+      SCORE_IDS.forEach(function (k) { d[k] = $(k).value.trim(); });
+      if (d.kor === '' || d.math === '' || d.eng === '') return fail('국어·수학·영어 점수를 입력해 주세요.', 's3');
+      if (!okNum(d.kor, 100) || !okNum(d.math, 100) || !okNum(d.eng, 100)) return fail('국어·수학·영어는 0~100으로 입력해 주세요.', 's3');
+      if (!okNum(d.hist, 50) || !okNum(d.inq1, 50) || !okNum(d.inq2, 50)) return fail('한국사·탐구는 0~50으로 입력해 주세요.', 's3');
+      if (!d.korSel || !d.mathSel) return fail('국어·수학 선택과목을 골라 주세요.', 's3');
+    } else {
+      if (state.type.photo === 'required' && !state.photo) return fail('성적표 사진을 올려 주세요.', 's3');
+      if (state.photo) d.photo = state.photo;
+    }
+
+    var btn = $('submit'); btn.disabled = true; btn.innerHTML = '<span class="spin"></span>저장 중';
+    fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(d) })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        btn.disabled = false; btn.textContent = '신청하기';
+        if (!res.ok) return fail(res.msg);
+        $('doneTitle').textContent = res.updated ? '신청이 변경되었습니다' : '신청이 접수되었습니다';
+        $('doneNo').textContent = '접수번호 ' + res.no;
+        var body = '<div class="kv"><span>이름</span><b>' + esc(d.name) + ' (' + d.seat + '번)</b></div>' +
+          '<div class="kv"><span>신청</span><b>' + esc(d.type) + '</b></div>';
+        if (state.type.scores) body += '<div class="kv"><span>국·수·영</span><b>' + d.kor + ' · ' + d.math + ' · ' + d.eng + '</b></div>';
+        else body += '<div class="kv"><span>성적표 사진</span><b>' + (d.photo ? '올림 완료' : '없음') + '</b></div>';
+        $('doneBody').innerHTML = body;
+        $('form').style.display = 'none'; $('bar').style.display = 'none'; $('done').style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      })
+      .catch(function () {
+        btn.disabled = false; btn.textContent = '신청하기';
+        fail('연결이 원활하지 않습니다. 잠시 후 다시 눌러 주세요.');
+      });
+  };
+
+  $('again').onclick = function () {
+    state.type = null; resetPhoto(); renderTypes(); renderS3();
+    $('done').style.display = 'none'; $('form').style.display = 'block'; $('bar').style.display = 'block';
+    window.scrollTo({ top: 0 });
+  };
+
+  fillInq('inq1Sel'); fillInq('inq2Sel');
+  renderTypes(); renderS3();
+</script>
+</body>
+</html>
