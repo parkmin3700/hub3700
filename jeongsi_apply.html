@@ -174,10 +174,10 @@
       </div>
       <div id="infoBox" style="display:none">
         <label class="photo" id="photoBox">
-          <input id="photoInput" type="file" accept="image/*">
+          <input id="photoInput" type="file" accept="image/*,application/pdf,.pdf">
           <img id="photoPrev" alt="성적표 사진 미리보기" style="display:none">
-          <b id="photoTitle">성적표 사진 올리기</b>
-          <span id="photoHint">눌러서 사진을 찍거나 골라 주세요.<br>점수가 잘 보이게 찍어 주세요.</span>
+          <b id="photoTitle">성적표 올리기</b>
+          <span id="photoHint">사진을 찍거나, 사진·PDF 파일을 골라 주세요.<br>점수가 잘 보이게 올려 주세요.</span>
         </label>
       </div>
     </section>
@@ -230,7 +230,7 @@
   var SCORE_IDS = ['korSel', 'kor', 'mathSel', 'math', 'eng', 'hist', 'inq1Sel', 'inq1', 'inq2Sel', 'inq2'];
 
   var $ = function (id) { return document.getElementById(id); };
-  var state = { type: null, photo: '' };
+  var state = { type: null, photo: '', photoType: '' };
 
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   function today() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
@@ -254,7 +254,7 @@
     var showScores = !t || t.scores;
     $('scoreBox').style.display = showScores ? '' : 'none';
     $('infoBox').style.display = showScores ? 'none' : '';
-    $('s3title').textContent = showScores ? '가채점 점수' : '성적표 사진';
+    $('s3title').textContent = showScores ? '가채점 점수' : '성적표 올리기';
     $('s3sub').textContent = showScores ? '원점수' : (t.photo === 'required' ? '필수' : '선택 · 바뀐 경우만');
   }
 
@@ -275,10 +275,25 @@
   $('photoInput').onchange = function () {
     var f = this.files && this.files[0];
     if (!f) return;
-    $('photoTitle').textContent = '사진 준비 중…';
+    $('photoTitle').textContent = '파일 준비 중…';
+    var isPdf = f.type === 'application/pdf' || /\.pdf$/i.test(f.name);
+    if (isPdf) {
+      if (f.size > 5 * 1024 * 1024) { state.photo = ''; $('photoTitle').textContent = 'PDF가 너무 큽니다 (5MB까지). 사진으로 올려 주세요.'; return; }
+      var rd = new FileReader();
+      rd.onload = function () {
+        state.photo = String(rd.result).split(',')[1]; state.photoType = 'application/pdf';
+        $('msg').textContent = '';
+        $('photoPrev').style.display = 'none'; $('photoBox').classList.add('has');
+        $('photoTitle').textContent = 'PDF 준비 완료';
+        $('photoHint').textContent = f.name + ' · 바꾸려면 다시 누르세요.';
+      };
+      rd.onerror = function () { state.photo = ''; $('photoTitle').textContent = '파일을 읽지 못했습니다. 다시 골라 주세요.'; };
+      rd.readAsDataURL(f);
+      return;
+    }
     shrink(f, function (dataUrl) {
       if (!dataUrl) { state.photo = ''; $('photoTitle').textContent = '사진을 읽지 못했습니다. 다시 골라 주세요.'; return; }
-      state.photo = dataUrl.split(',')[1];
+      state.photo = dataUrl.split(',')[1]; state.photoType = 'image/jpeg';
       $('msg').textContent = '';
       $('photoPrev').src = dataUrl; $('photoPrev').style.display = 'block';
       $('photoBox').classList.add('has');
@@ -288,11 +303,11 @@
   };
 
   function resetPhoto() {
-    state.photo = ''; $('photoInput').value = '';
+    state.photo = ''; state.photoType = ''; $('photoInput').value = '';
     $('photoPrev').style.display = 'none'; $('photoPrev').removeAttribute('src');
     $('photoBox').classList.remove('has');
-    $('photoTitle').textContent = '성적표 사진 올리기';
-    $('photoHint').innerHTML = '눌러서 사진을 찍거나 골라 주세요.<br>점수가 잘 보이게 찍어 주세요.';
+    $('photoTitle').textContent = '성적표 올리기';
+    $('photoHint').innerHTML = '사진을 찍거나, 사진·PDF 파일을 골라 주세요.<br>점수가 잘 보이게 올려 주세요.';
   }
 
   function fillInq(id) {
@@ -325,8 +340,8 @@
       if (!okNum(d.hist, 50) || !okNum(d.inq1, 50) || !okNum(d.inq2, 50)) return fail('한국사·탐구는 0~50으로 입력해 주세요.', 's3');
       if (!d.korSel || !d.mathSel) return fail('국어·수학 선택과목을 골라 주세요.', 's3');
     } else {
-      if (state.type.photo === 'required' && !state.photo) return fail('성적표 사진을 올려 주세요.', 's3');
-      if (state.photo) d.photo = state.photo;
+      if (state.type.photo === 'required' && !state.photo) return fail('성적표 사진이나 PDF를 올려 주세요.', 's3');
+      if (state.photo) { d.photo = state.photo; d.photoType = state.photoType; }
     }
 
     var btn = $('submit'); btn.disabled = true; btn.innerHTML = '<span class="spin"></span>저장 중';
@@ -340,7 +355,7 @@
         var body = '<div class="kv"><span>이름</span><b>' + esc(d.name) + ' (' + d.seat + '번)</b></div>' +
           '<div class="kv"><span>신청</span><b>' + esc(d.type) + '</b></div>';
         if (state.type.scores) body += '<div class="kv"><span>국·수·영</span><b>' + d.kor + ' · ' + d.math + ' · ' + d.eng + '</b></div>';
-        else body += '<div class="kv"><span>성적표 사진</span><b>' + (d.photo ? '올림 완료' : '없음') + '</b></div>';
+        else body += '<div class="kv"><span>성적표</span><b>' + (d.photo ? (d.photoType === 'application/pdf' ? 'PDF 올림 완료' : '사진 올림 완료') : '없음') + '</b></div>';
         $('doneBody').innerHTML = body;
         $('form').style.display = 'none'; $('bar').style.display = 'none'; $('done').style.display = 'block';
         window.scrollTo({ top: 0, behavior: 'smooth' });
