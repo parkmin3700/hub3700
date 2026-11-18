@@ -109,6 +109,16 @@
   .chips button.on { background: var(--navy); border-color: var(--navy); color: #fff; }
   .lab2 { display: block; font-size: 12px; color: var(--sub); margin: 14px 0 6px 2px; }
   .empty { font-size: 13px; color: var(--sub); padding: 6px 2px; }
+  .ag { display: flex; gap: 10px; align-items: flex-start; padding: 12px 2px; border-top: 1px solid var(--line); cursor: pointer; font-size: 14px; line-height: 1.5; }
+  .ag:first-of-type { border-top: 0; padding-top: 2px; }
+  .ag input { width: 22px; height: 22px; flex: none; margin: 0; accent-color: var(--navy); }
+  .ag em { font-style: normal; font-size: 12px; font-weight: 700; color: var(--err); margin-right: 4px; }
+  .ag em.opt { color: var(--sub); }
+  .ag small { display: block; font-size: 12px; color: var(--sub); margin-top: 3px; }
+  .more { font: inherit; font-size: 12px; color: var(--navy2); background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; }
+  .terms { display: none; background: var(--bg); border-radius: 12px; padding: 12px 14px; font-size: 12.5px; line-height: 1.7; color: var(--ink); margin: 2px 0 10px; }
+  .terms.open { display: block; }
+  .terms b { color: var(--navy); }
 
   .bar { position: fixed; left: 0; right: 0; bottom: 0; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); background: linear-gradient(180deg, rgba(244,245,249,0), var(--bg) 35%); z-index: 5; }
   .bar-in { max-width: 520px; margin: 0 auto; }
@@ -204,6 +214,25 @@
       <div class="field"><label for="memo">하고 싶은 말</label><textarea id="memo" maxlength="300" placeholder="희망 지역, 전공 고민, 꼭 알고 싶은 것 등"></textarea></div>
     </section>
 
+    <section class="sec" id="s5">
+      <div class="sec-h"><div class="num">5</div><b>동의</b></div>
+      <label class="ag"><input type="checkbox" id="agree">
+        <span><em>필수</em>개인정보 수집·이용에 동의합니다.<br><button type="button" class="more" id="termsBtn">내용 보기</button></span></label>
+      <div class="terms" id="terms">
+        <b>수집 항목</b> 이름, 휴대폰 번호, 수능 성적,<br>지원 대학·학과, 최종 합격 결과<br>
+        <b>이용 목적</b> 정시 분석 결과지 제공,<br>학원 정시 상담 자료 개선<br>
+        <b>보관 기간</b> 3년 (지나면 바로 파기)<br>
+        <b>제3자 제공</b> 하지 않음<br>
+        동의하지 않을 수 있지만,<br>그러면 결과지를 드리기 어렵습니다.
+      </div>
+      <div id="resultAgree" style="display:none">
+        <label class="ag"><input type="checkbox" id="agreeResult">
+          <span><em>필수</em>최종 합격 결과를 학원에 알려 주겠습니다.<small>추가합격까지 끝난 뒤(2027년 2월)<br>문자로 알려 주시면 됩니다.<br>후배들의 정시 상담에 쓰입니다.</small></span></label>
+        <label class="ag"><input type="checkbox" id="agreeBlog">
+          <span><em class="opt">선택</em>이름·연락처를 지운 성적과 합격 결과를<br>블로그 합격 사례로 써도 됩니다.</span></label>
+      </div>
+    </section>
+
     <div class="foot">같은 종류를 다시 신청하면 이전 신청이 새 내용으로 바뀝니다.<br>문의 062-672-0521 · 010-3491-3700</div>
   </div>
 
@@ -243,7 +272,7 @@
   // ▼ 신청 종류별 기간 (Code.gs의 TYPES와 같게 유지)
   var TYPES = [
     { name: '1차 가채점 분석', desc: '가채점으로 지원 가능 범위 잡기', from: '2026-11-19', to: '2026-12-10', scores: true, photo: '' },
-    { name: '2차 실채점 분석', desc: '성적표 기준 군별 지원 조합', from: '2026-12-11', to: '2027-01-03', scores: false, photo: 'required' },
+    { name: '2차 실채점 분석', desc: '성적표 기준 군별 지원 조합', from: '2026-12-11', to: '2027-01-03', scores: false, photo: 'required', result: true },
     { name: '원서 접수 전 최종 점검', desc: '최종 지원 대학 확인', from: '2026-12-28', to: '2027-01-07', scores: false, photo: 'optional' }
   ];
   var INQ = ['생활과 윤리', '윤리와 사상', '한국지리', '세계지리', '동아시아사', '세계사', '경제', '정치와 법', '사회·문화',
@@ -277,6 +306,7 @@
     $('infoBox').style.display = showScores ? 'none' : '';
     $('s3title').textContent = showScores ? '가채점 점수' : '성적표 올리기';
     $('s3sub').textContent = showScores ? '원점수' : (t.photo === 'required' ? '필수' : '선택 · 바뀐 경우만');
+    $('resultAgree').style.display = t && t.result ? '' : 'none';
   }
 
   // 사진을 가로세로 최대 1800px JPEG로 줄여서 보냄 (용량·속도)
@@ -355,7 +385,9 @@
     if (!state.type) return fail('신청 종류를 골라 주세요.', 's2');
 
     var d = { phone: phone, name: name, stype: state.stype,
-              type: state.type.name, wish: $('wish').value, memo: $('memo').value };
+              type: state.type.name, wish: $('wish').value, memo: $('memo').value,
+              agree: $('agree').checked };
+    if (state.type.result) { d.agreeResult = $('agreeResult').checked; d.agreeBlog = $('agreeBlog').checked; }
     if (state.type.scores) {
       SCORE_IDS.forEach(function (k) { d[k] = $(k).value.trim(); });
       if (d.kor === '' || d.math === '' || d.eng === '') return fail('국어·수학·영어 점수를 입력해 주세요.', 's3');
@@ -366,6 +398,9 @@
       if (state.type.photo === 'required' && !state.photo) return fail('성적표 사진이나 PDF를 올려 주세요.', 's3');
       if (state.photo) { d.photo = state.photo; d.photoType = state.photoType; }
     }
+
+    if (!d.agree) return fail('개인정보 수집·이용에 동의해 주세요.', 's5');
+    if (state.type.result && !d.agreeResult) return fail('합격 결과 회신에 동의해 주세요.', 's5');
 
     var btn = $('submit'); btn.disabled = true; btn.innerHTML = '<span class="spin"></span>저장 중';
     fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(d) })
@@ -391,6 +426,7 @@
 
   $('again').onclick = function () {
     state.type = null; resetPhoto(); renderTypes(); renderS3();
+    $('agreeResult').checked = false; $('agreeBlog').checked = false;
     $('done').style.display = 'none'; $('form').style.display = 'block'; $('bar').style.display = 'block';
     window.scrollTo({ top: 0 });
   };
@@ -406,6 +442,8 @@
     var p = this.value.replace(/\D/g, '').slice(0, 11);
     this.value = p.length < 4 ? p : p.length < 8 ? p.slice(0, 3) + '-' + p.slice(3) : p.slice(0, 3) + '-' + p.slice(3, p.length - 4) + '-' + p.slice(-4);
   };
+
+  $('termsBtn').onclick = function (e) { e.preventDefault(); var t = $('terms'); t.classList.toggle('open'); this.textContent = t.classList.contains('open') ? '접기' : '내용 보기'; };
 
   $('sampleBtn').onclick = function () { $('sampleModal').classList.add('open'); document.body.style.overflow = 'hidden'; };
   function closeSample() { $('sampleModal').classList.remove('open'); document.body.style.overflow = ''; }
